@@ -10,7 +10,10 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 
 app.get('/', (req, res) => {
-    res.render('index');
+    res.render('index', {
+        corrected: "",
+        originalText: ""
+    });
 });
 
 //MAIN LOGIC ROUTE
@@ -20,7 +23,7 @@ app.post('/correct', async (req, res) => {
     if(!text) {
         res.render("index",{
             error: 'No input found',
-            inputText: text
+            originalText: text
         });
     }
     try{
@@ -31,7 +34,7 @@ app.post('/correct', async (req, res) => {
                 'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
             },
             body: JSON.stringify({
-                model: 'GPT-3.5 Turbo',
+                model: 'gpt-3.5 Turbo',
                 messages: [
                     {
                         role: 'system',
@@ -51,14 +54,14 @@ app.post('/correct', async (req, res) => {
         if(!response.ok) {
             res.render("index",{
                 error: 'Something went wrong',
-                inputText: text
+                originalText: text
             })
         }
         const data = await response.json();
         const correctedText = data.choices[0].message.content;
         res.render("index",{
             error: null,
-            inputText: text,
+            corrected: text,
             correctedText: correctedText
         });
     }
@@ -66,7 +69,7 @@ app.post('/correct', async (req, res) => {
         console.error(error);
         res.render("index",{
             error: 'Something went wrong',
-            inputText: text
+            originalText: text
         });
     }
 });
